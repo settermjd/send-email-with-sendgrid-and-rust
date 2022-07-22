@@ -3,7 +3,6 @@ name = "send-with-sendgrid-and-rust"
 version = "0.1.0"
 edition = "2021"
 authors = ["Matthew Setter"]
-edition = "2018"
 
 [dependencies]
 error-chain = { version = "0.12.4" }
