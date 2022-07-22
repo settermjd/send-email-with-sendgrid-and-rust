@@ -58,7 +58,7 @@ fn main() ->  Result<(), Err()> {
 
     // Handle/Check the response
     match response.status() {
-        200 | 201 | 202 => println!("Email sent!"),
+        StatusCode::OK | StatusCode::CREATED | StatusCode::ACCEPTED => println!("Email sent!"),
         _ => println!("Unable to send your email"),
     }
 
