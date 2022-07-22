@@ -2,18 +2,25 @@ use reqwest::StatusCode;
 use serde_json::json;
 use std::env;
 
-fn main() ->  Result<(), reqwest::Error> {
-    struct User {
-        name: String,
-        email: String
-    }
+struct User {
+    name: String,
+    email: String,
+}
 
+#[tokio::main]
+async fn main() -> Result<(), ()> {
     // Load environment variables
-    let api_key = env::var("SENDGRID_API_KEY");
-    let auth_token = format!("Bearer {}", api_key.unwrap());
+    let api_key = env::var("SENDGRID_API_KEY").unwrap();
 
-    let sender = User{ name: String::from(""), email: String::from("")};
-    let recipient = User{ name: String::from(""), email: String::from("")};
+    let sender = User {
+        name: String::from(""),
+        email: String::from(""),
+    };
+    let recipient = User {
+        name: String::from(""),
+        email: String::from(""),
+    };
+
     let body = json!({
         "personalizations": [
             {
@@ -43,16 +50,19 @@ fn main() ->  Result<(), reqwest::Error> {
     });
 
     // Send the email
-    let client = reqwest::blocking::Client::new();
-    let response = client.post("https://api.sendgrid.com/v3/mail/send")
+    let response = Client::new()
+        .post("https://api.sendgrid.com/v3/mail/send")
         .json(&body)
-        .header(reqwest::header::AUTHORIZATION, auth_token)
-        .send()?;
+        .header(header::AUTHORIZATION, format!("Bearer {}", api_key))
+        .header(header::CONTENT_TYPE, header::HeaderValue::from_static("application/json"))
+        .send()
+        .await
+        .unwrap();
 
     // Handle/Check the response
-    match response.status() {
+    match response.status().as_u16() {
         StatusCode::OK | StatusCode::CREATED | StatusCode::ACCEPTED => println!("Email sent!"),
-        _ => println!("Unable to send your email"),
+        _ => eprintln!("Unable to send your email"),
     }
 
     Ok(())
