@@ -1,3 +1,5 @@
+use reqwest::header;
+use reqwest::Client;
 use reqwest::StatusCode;
 use serde_json::json;
 use std::env;
