@@ -1,6 +1,7 @@
 [package]
 name = "send-with-sendgrid-and-rust"
 version = "0.1.0"
+edition = "2021"
 authors = ["Matthew Setter"]
 
 [dependencies]
