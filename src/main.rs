@@ -1,3 +1,5 @@
+use reqwest::header;
+use reqwest::Client;
 use reqwest::StatusCode;
 use serde_json::json;
 use std::env;
@@ -60,7 +62,7 @@ async fn main() -> Result<(), ()> {
         .unwrap();
 
     // Handle/Check the response
-    match response.status().as_u16() {
+    match response.status() {
         StatusCode::OK | StatusCode::CREATED | StatusCode::ACCEPTED => println!("Email sent!"),
         _ => eprintln!("Unable to send your email"),
     }
