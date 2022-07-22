@@ -1,5 +1,4 @@
-use reqwest::header;
-use reqwest::Client;
+use reqwest::StatusCode;
 use serde_json::json;
 use std::env;
 
@@ -21,6 +20,7 @@ async fn main() -> Result<(), ()> {
         name: String::from(""),
         email: String::from(""),
     };
+
     let body = json!({
         "personalizations": [
             {
@@ -61,7 +61,7 @@ async fn main() -> Result<(), ()> {
 
     // Handle/Check the response
     match response.status().as_u16() {
-        200 | 201 | 202 => println!("Email sent!"),
+        StatusCode::OK | StatusCode::CREATED | StatusCode::ACCEPTED => println!("Email sent!"),
         _ => eprintln!("Unable to send your email"),
     }
 
