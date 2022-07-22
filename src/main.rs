@@ -9,7 +9,6 @@ fn main() ->  Result<(), reqwest::Error> {
     }
 
     // Load environment variables
-
     let api_key = env::var("SENDGRID_API_KEY");
     let auth_token = format!("Bearer {}", api_key.unwrap());
 
@@ -47,7 +46,7 @@ fn main() ->  Result<(), reqwest::Error> {
     let client = reqwest::blocking::Client::new();
     let response = client.post("https://api.sendgrid.com/v3/mail/send")
         .json(&body)
-        .basic_auth("",Some(auth_token))
+        .header(reqwest::header::AUTHORIZATION, auth_token)
         .send()?;
 
     // Handle/Check the response
