@@ -1,9 +1,8 @@
-use reqwest::header;
-use reqwest::Client;
+use reqwest::StatusCode;
 use serde_json::json;
 use std::env;
 
-fn main() ->  Result<(), Err()> {
+fn main() ->  Result<(), reqwest::Error> {
     struct User {
         name: String,
         email: String
