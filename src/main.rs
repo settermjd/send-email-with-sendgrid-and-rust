@@ -1,4 +1,6 @@
+use reqwest::header;
 use reqwest::StatusCode;
+use reqwest::{blocking::Client, Error};
 use serde_json::json;
 use std::env;
 
@@ -7,62 +9,70 @@ struct User {
     email: String,
 }
 
-#[tokio::main]
-async fn main() -> Result<(), ()> {
-    // Load environment variables
+fn main() -> Result<(), Error> {
+    dotenv::dotenv().ok();
+
     let api_key = env::var("SENDGRID_API_KEY").unwrap();
 
     let sender = User {
-        name: String::from(""),
-        email: String::from(""),
+        name: env::var("SENDER_NAME").unwrap(),
+        email: env::var("SENDER_EMAIL").unwrap(),
     };
+
     let recipient = User {
-        name: String::from(""),
-        email: String::from(""),
+        name: env::var("RECIPIENT_NAME").unwrap(),
+        email: env::var("RECIPIENT_EMAIL").unwrap(),
     };
 
-    let body = json!({
-        "personalizations": [
-            {
-                "to": [
-                    {
-                        "email": sender.email,
-                        "name": sender.name
-                    }
-                ]
-            }
-        ],
-        "from": {
-            "email": recipient.email,
-            "name": recipient.name
-          },
-        "subject": "Let's Send an Email With Rust and SendGrid",
-        "content": [
-            {
-                "type": "text/html",
-                "value": "Here is your <strong>AMAZING</strong> email!"
+    // personalizations should not contain a from field, otherwise we get from the API:
+    // "The from address does not match a verified Sender Identity. Mail cannot be sent until this error is resolved. 
+    // Visit https://sendgrid.com/docs/for-developers/sending-email/sender-identity/ to see the Sender Identity requirements"
+    let body = json!(
+        {
+            "personalizations": [{
+                "to": [{
+                    "email": recipient.email,
+                    "name": recipient.name
+                }]
+            }],
+            "from": {
+                "email": sender.email,
+                "name": sender.name
             },
-            {
-                "type": "text/plain",
-                "value": "Here is your AMAZING email!"
-            }
-        ]
-    });
+            "subject": "Let's Send an Email With Rust and SendGrid",
+            "content": [
+                {
+                    "type": "text/plain",
+                    "value": "Here is your AMAZING email!"
+                },
+                {
+                    "type": "text/html",
+                    "value": "Here is your <strong>AMAZING</strong> email!"
+                },
+            ]
+        }
+    );
 
-    // Send the email
-    let response = Client::new()
+    // println!("try to send email with body: {:?}", body.to_string());
+
+    let client = Client::new()
         .post("https://api.sendgrid.com/v3/mail/send")
         .json(&body)
-        .header(header::AUTHORIZATION, format!("Bearer {}", api_key))
-        .header(header::CONTENT_TYPE, header::HeaderValue::from_static("application/json"))
-        .send()
-        .await
-        .unwrap();
+        .bearer_auth(api_key)
+        .header(
+            header::CONTENT_TYPE,
+            header::HeaderValue::from_static("application/json"),
+        );
 
-    // Handle/Check the response
-    match response.status().as_u16() {
+    let response = client.send()?;
+
+    match response.status() {
         StatusCode::OK | StatusCode::CREATED | StatusCode::ACCEPTED => println!("Email sent!"),
-        _ => eprintln!("Unable to send your email"),
+        _ => eprintln!(
+            "Unable to send your email. Status code was: {}. Body content was: {:?}",
+            response.status(),
+            response.text()
+        ),
     }
 
     Ok(())

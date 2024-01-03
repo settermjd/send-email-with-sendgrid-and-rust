@@ -2,12 +2,13 @@
 name = "send-with-sendgrid-and-rust"
 version = "0.1.0"
 edition = "2021"
-authors = ["Matthew Setter"]
-edition = "2018"
+authors = ["Matthew Setter", "Thomas Koeppen"]
 
 [dependencies]
 error-chain = { version = "0.12.4" }
-reqwest = { version = "0.11", features = ["json"] }
+reqwest = { version = "0.11", features = ["json", "blocking"] }
 serde = { version = "1.0", features = ["derive"] }
-serde_json = { version = "1.0.82" }
+# feature preserve_order is not required, but make it easier to debug the json in the same order as the API docs
+serde_json = { version = "1.0.82", features = ["preserve_order"] }
 tokio = { version = "1", features = ["full"] }
+dotenv = { version = "0.15.0" }
